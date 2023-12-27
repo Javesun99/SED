@@ -358,7 +358,7 @@ if __name__ == "__main__":
     #使用预训练的ghostnet
     # model = pretrained_ghostnet()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    # model = model().to(device)
+    model = model.to(device)
     optimizer = optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     criterion = nn.CrossEntropyLoss()
     # epochs = 100 # original 50
