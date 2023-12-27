@@ -225,7 +225,7 @@ def train(epoch):
         _,pred = outputs.topk(5,1,True,True)
         pred = pred.t()
         correct = pred.eq(labels.view(1,-1).expand_as(pred))
-        correct_k = correct[:5].view(-1).float().sum(0)
+        correct_k = correct[:5].reshape(-1).float().sum(0)
         acc5 += correct_k
 
         loss.backward()
@@ -280,7 +280,7 @@ def eval(epoch):
         _,pred = outputs.topk(5,1,True,True)
         pred = pred.t()
         correct = pred.eq(labels.view(1,-1).expand_as(pred))
-        correct_k = correct[:5].view(-1).float().sum(0)
+        correct_k = correct[:5].reshape(-1).float().sum(0)
         acc5 += correct_k
         #loss.backward()
         #optimizer.step()
@@ -323,15 +323,6 @@ if __name__ == "__main__":
 
     # save train?
     SAVE_DATA = True
-
-    # define directories
-    base_dir = "./"
-    esc_dir = os.path.join(base_dir, "ESC-50-master")
-    meta_file = os.path.join(esc_dir, "meta/esc50.csv")
-    audio_dir = os.path.join(esc_dir, "audio/")
-
-    # load metadata
-    meta_data = pd.read_csv(meta_file)
 
     # get training dataset and target dataset
     x = list(meta_data.loc[:,"filename"])
