@@ -257,12 +257,13 @@ def load_pretrained_weights(model, weights_path):
     return model
 
 
-model = ghostnet(num_classes=1000)
-model = load_pretrained_weights(model, './pretrained/state_dict_73.98.pth')
-basemodel = nn.Sequential(*list(model.children())[:-2])
+
 class pretrained_ghostnet(nn.Module):
     def __init__(self):
         super(pretrained_ghostnet, self).__init__()
+        model = ghostnet(num_classes=1000)
+        model = load_pretrained_weights(model, './pretrained/state_dict_73.98.pth')
+        basemodel = nn.Sequential(*list(model.children())[:-2])
         self.features = basemodel
         self.fc = nn.Conv2d(1280, 50, 1)
         self.pool = nn.AdaptiveAvgPool2d(1)
