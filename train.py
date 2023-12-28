@@ -4,7 +4,6 @@ import numpy as np
 import time
 import pandas as pd
 import matplotlib.pyplot as plt
-import cv2
 from tqdm import tqdm
 from sklearn import model_selection
 
@@ -309,7 +308,26 @@ def eval(epoch):
 if __name__ == "__main__":
     os.makedirs("log", exist_ok=True)
     os.makedirs("models", exist_ok=True)
-    batch_size = 8
+
+
+    global args
+    args = parser.parse_args()
+    if args.arch == "ghostnet":
+        model = ghostnet()
+    elif args.arch == "pretrained_ghostnet":
+        model = pretrained_ghostnet()
+    else:
+        raise ValueError("Invalid model name")
+
+
+    watermark = args.arch
+    model_name = watermark
+
+    lr = args.lr
+
+
+    batch_size = args.batch_size
+
     CONTINUE = False
 
     # define directories
@@ -336,20 +354,7 @@ if __name__ == "__main__":
     train_loader = torch.utils.data.DataLoader(traindataset, batch_size=batch_size,shuffle=True, num_workers=0)
     test_loader = torch.utils.data.DataLoader(testdataset, batch_size=batch_size,shuffle=True, num_workers=0)
 
-    global args
-    args = parser.parse_args()
-    if args.arch == "ghostnet":
-        model = ghostnet()
-    elif args.arch == "pretrained_ghostnet":
-        model = pretrained_ghostnet()
-    else:
-        raise ValueError("Invalid model name")
 
-
-    watermark = args.arch
-    model_name = watermark
-
-    lr = args.lr
 
 
     # model = mymodel()
