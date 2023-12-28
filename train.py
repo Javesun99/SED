@@ -241,11 +241,11 @@ def train(epoch):
     print('train acc : {:.2f}%'.format(running_acc/(len(train_loader))*100))
     print('train loss : {:.4f}'.format(running_loss/len(train_loader)))
     print('dev acc1 : {:.2f}%'.format(acc/(len(train_loader))*100))
-    print('dev acc5 : {:.2f}%'.format(acc5/(len(train_loader))*100))
+    print('dev acc5 : {:.2f}%'.format(acc5/(len(train_loader)*8)*100))
 
     # save logs
     log_epoch = {'epoch': epoch+1, 'lr': optimizer.state_dict()['param_groups'][0]['lr'],
-                     'loss': running_loss/len(train_loader), "acc 1": acc/(len(train_loader)), "acc 5": acc5/(len(train_loader))}
+                     'loss': running_loss/len(train_loader), "acc 1": acc/(len(train_loader)), "acc 5": acc5/(len(train_loader)*8)}
     logs.append(log_epoch)
     df = pd.DataFrame(logs)
     df.to_csv("log/log_output_train_{}.csv".format(watermark))
@@ -295,11 +295,11 @@ def eval(epoch):
     print('eval acc : {:.2f}%'.format(running_acc/(len(test_loader))*100))
     print('eval loss : {:.4f}'.format(running_loss/len(test_loader)))
     print('dev acc1 : {:.2f}%'.format(acc/(len(test_loader))*100))
-    print('dev acc5 : {:.2f}%'.format(acc5/(len(test_loader))*100))
+    print('dev acc5 : {:.2f}%'.format(acc5/(len(test_loader)*8)*100))
 
     # save logs
     log_epoch = {'epoch': epoch+1, 'lr': optimizer.state_dict()['param_groups'][0]['lr'],
-                     'loss': running_loss/len(test_loader), "acc 1": acc/(len(test_loader)), "acc 5": acc5/(len(test_loader))}
+                     'loss': running_loss/len(test_loader), "acc 1": acc/(len(test_loader)), "acc 5": acc5/(len(test_loader)*8)}
     logs_eval.append(log_epoch)
     df = pd.DataFrame(logs_eval)
     df.to_csv("log/log_output_eval_{}.csv".format(watermark))
