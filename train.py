@@ -40,7 +40,7 @@ parser.add_argument('--lr', '--learning-rate', default=1e-4, type=float,metavar=
 parser.add_argument('--batch_size', default=8, type=int,metavar='N',help='mini-batch size (default: 8)')
 parser.add_argument('-p','--pretrained', dest='pretrained', action='store_true',help='use pre-trained model')
 parser.add_argument('--arch', '-a', metavar='ARCH', default='ghostnet',help='model architecture: (default: resnet18)')
-
+parser.add_argument('--test_size','-t', default=0.2, type=float,metavar='N',help='test_size')
 
 logs = []
 logs_eval = []
@@ -137,7 +137,7 @@ class ESC50Dataset(Dataset):
         melsp -= mean
         melsp /= std
 
-        melsp = np.asarray([melsp, melsp, melsp])
+        melsp = np.asarray([melsp, melsp, melsp])#(3,128,1723)
         return melsp, label
 
 # #!加载预训练模型
@@ -231,8 +231,6 @@ def train(epoch):
         optimizer.step()
 
         t.set_description(f'(loss={running_loss/(idx+1):.4f})(acc 1={acc/(idx+1):.4f})')
-        if idx%8==7:
-            rd = np.random.rand()
 
     #scheduler.step()
     losses.append(running_loss/len(train_loader))
@@ -263,8 +261,6 @@ def eval(epoch):
         inputs = inputs.to(device)
         labels = labels.to(device)
 
-        # set opt
-        optimizer.zero_grad()
 
         with torch.no_grad():
             # run model
@@ -281,14 +277,11 @@ def eval(epoch):
         correct = pred.eq(labels.view(1,-1).expand_as(pred))
         correct_k = correct[:5].reshape(-1).float().sum(0)
         acc5 += correct_k
-        #loss.backward()
-        #optimizer.step()
 
         t.set_description(f'(loss={running_loss/(idx+1):.4f})(acc 1={acc/(idx+1):.4f})')
-        if idx%8==7:
-            rd = np.random.rand()
 
-    #scheduler.step()
+    #设置动态学习率
+    exp_lr_scheduler.step(running_loss/len(test_loader))
     losses.append(running_loss/len(test_loader))
     accs.append(running_acc/(len(test_loader)))
     print('eval acc : {:.2f}%'.format(running_acc/(len(test_loader))*100))
@@ -327,6 +320,7 @@ if __name__ == "__main__":
 
     lr = args.lr
 
+    test_size = args.test_size
 
     batch_size = args.batch_size
 
@@ -348,7 +342,7 @@ if __name__ == "__main__":
     x = list(meta_data.loc[:,"filename"])
     y = list(meta_data.loc[:, "target"])
 
-    x_train, x_test, y_train, y_test = model_selection.train_test_split(x, y, test_size=0.25, stratify=y, random_state=42)
+    x_train, x_test, y_train, y_test = model_selection.train_test_split(x, y, test_size=test_size, stratify=y, random_state=42)
 
 
     traindataset = ESC50Dataset(x_train, y_train, data_aug=True)

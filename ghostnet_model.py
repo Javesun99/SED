@@ -315,23 +315,25 @@ class pretrained_ghostnet_gru(nn.Module):
         return x
 
 
+from torchsummary import summary
 
 if __name__=='__main__':
-    model = ghostnet()
-    model.eval()
-    # print(model)
-    input = torch.randn(32,3,128,1723)
-    y = model(input)
+    # model = ghostnet()
+    # model.eval()
+    # # print(model)
+    # input = torch.randn(32,3,128,1723)
+    # y = model(input)
     # print(y.size())
-    # from torchsummary import summary
+
     # model = ghostnet()
     # summary(model, (3, 128, 1723))
 
 
     #预训练的ghhosnet测试
-    # model = pretrained_ghostnet()
-    # model.eval()
-    # # print(model)
-    # input = torch.randn(32,3,128,1723)
-    # y = model(input)
-    # print(y.size())#torch.Size([32, 50])
+    model = pretrained_ghostnet_gru()
+    model.eval()
+    print(model)
+    input = torch.randn(32,3,128,1723)
+    y = model(input)
+    print(y.size())#torch.Size([32, 50])
+    summary(model, (3, 128, 1723))
