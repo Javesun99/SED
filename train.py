@@ -381,4 +381,4 @@ if __name__ == "__main__":
         train(epoch)
         eval(epoch)
         if epoch %10==0:
-            torch.save(model.state_dict(), './models/{}_{}epochs_saved_weights.pth'.format(watermark, epoch))
+            torch.save(model.state_dict(), './models/{}_lr{}_{}epochs_saved_weights.pth'.format(watermark,lr,epoch))
