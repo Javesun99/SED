@@ -265,16 +265,17 @@ class pretrained_ghostnet(nn.Module):
         model = load_pretrained_weights(model, './pretrained/state_dict_73.98.pth')
         basemodel = nn.Sequential(*list(model.children())[:-2])
         self.features = basemodel
-        self.fc = nn.Conv2d(1280, 50, 1)
         self.pool = nn.AdaptiveAvgPool2d(1)
+        self.fc = nn.Conv2d(1280, 50, 1)
+
 
     def forward(self, x):
         x = self.features(x)#x.shape:[32,1280,1,1]
         x = self.pool(x)#x.shape:[32,1280,1,1]
-        x = self.fc(x).squeeze(2).squeeze(2)
+        x = self.fc(x).squeeze(2).squeeze(2)#这里的输入时[32,1280,1,1]，输出是[32,50,1,1]，所以要squeeze(2).squeeze(2)变成[32,50]
         return x
 
-#将fc从卷积改为Linear
+# #将fc从卷积改为Linear
 # class pretrained_ghostnet(nn.Module):
 #     def __init__(self):
 #         super(pretrained_ghostnet, self).__init__()
@@ -287,7 +288,8 @@ class pretrained_ghostnet(nn.Module):
 
 #     def forward(self, x):
 #         x = self.features(x)#x.shape:[32,1280,1,1]
-#         x = x.view(x.size(0), -1)
+#         x = self.act(x)
+#         x = x.view(x.size(0), -1)#x.shape:[32,1280]
 #         x = self.fc(x)
 #         return x
 
@@ -327,7 +329,7 @@ if __name__=='__main__':
 
 
     #预训练的ghhosnet测试
-    model = pretrained_ghostnet_gru()
+    model = pretrained_ghostnet()
     model.eval()
     # print(model)
     input = torch.randn(32,3,128,1723)

@@ -27,7 +27,7 @@ from torch.utils.data import Dataset,DataLoader
 from torchvision import transforms,models
 from torch.optim import lr_scheduler
 
-from ghostnet_model import ghostnet,pretrained_ghostnet
+from ghostnet_model import ghostnet,pretrained_ghostnet,pretrained_ghostnet_gru
 
 import sklearn.metrics
 
@@ -316,6 +316,8 @@ if __name__ == "__main__":
         model = ghostnet()
     elif args.arch == "pretrained_ghostnet":
         model = pretrained_ghostnet()
+    elif args.arch == "pretrained_ghostnet_gru":
+        model = pretrained_ghostnet_gru()
     else:
         raise ValueError("Invalid model name")
 
