@@ -274,6 +274,26 @@ class pretrained_ghostnet(nn.Module):
         x = self.fc(x).squeeze(2).squeeze(2)
         return x
 
+class pretrained_ghostnet_gru(nn.Module):
+    def __init__(self):
+        super(pretrained_ghostnet_gru, self).__init__()
+        ghostnet = pretrained_ghostnet()
+        self.ghostnet = nn.Sequential(*list(ghostnet.children())[:-2])
+        self.gru = nn.GRU(1280, 50, 2, batch_first=True, bidirectional=True)
+        self.fc = nn.Linear(100, 50)
+        self.pool = nn.AdaptiveAvgPool1d(1)
+
+    def forward(self, x):
+        x = self.ghostnet(x)
+        x = x.permute(0, 2, 3, 1)
+        x = x.reshape(x.size(0), x.size(1), -1)
+        x, _ = self.gru(x)
+        x = x.squeeze(1)
+        x = self.fc(x)
+        x = self.pool(x)
+        return x
+
+
 
 if __name__=='__main__':
     # model = ghostnet()
@@ -288,7 +308,7 @@ if __name__=='__main__':
 
 
     #预训练的ghhosnet测试
-    model = pretrained_ghostnet()
+    model = pretrained_ghostnet_gru()
     model.eval()
     input = torch.randn(32,3,128,1723)
     y = model(input)
