@@ -211,7 +211,7 @@ class GhostNet(nn.Module):
         x = self.conv_head(x)
         x = self.act2(x)
         x = x.view(x.size(0), -1)
-        if self.dropout > 0.:
+        if self.dropout > 0.:#dropout=0.2,下面预训练模型中没有dropout层
             x = F.dropout(x, p=self.dropout, training=self.training)
         x = self.classifier(x)
         return x
@@ -269,29 +269,47 @@ class pretrained_ghostnet(nn.Module):
         self.pool = nn.AdaptiveAvgPool2d(1)
 
     def forward(self, x):
-        x = self.features(x)
-        x = self.pool(x)
+        x = self.features(x)#x.shape:[32,1280,1,1]
+        x = self.pool(x)#x.shape:[32,1280,1,1]
         x = self.fc(x).squeeze(2).squeeze(2)
         return x
+
+#将fc从卷积改为Linear
+# class pretrained_ghostnet(nn.Module):
+#     def __init__(self):
+#         super(pretrained_ghostnet, self).__init__()
+#         model = ghostnet(num_classes=1000)
+#         model = load_pretrained_weights(model, './pretrained/state_dict_73.98.pth')
+#         basemodel = nn.Sequential(*list(model.children())[:-2])
+#         self.features = basemodel
+#         self.act = nn.ReLU(inplace=True)
+#         self.fc = nn.Linear(1280, 50)
+
+#     def forward(self, x):
+#         x = self.features(x)#x.shape:[32,1280,1,1]
+#         x = x.view(x.size(0), -1)
+#         x = self.fc(x)
+#         return x
 
 class pretrained_ghostnet_gru(nn.Module):
     def __init__(self):
         super(pretrained_ghostnet_gru, self).__init__()
-        ghostnet = pretrained_ghostnet()
-        self.ghostnet = nn.Sequential(*list(ghostnet.children())[:-2])
-        self.gru = nn.GRU(1280, 50, 2, batch_first=True, bidirectional=True)
+        model = ghostnet(num_classes=1000)
+        model = load_pretrained_weights(model, './pretrained/state_dict_73.98.pth')
+        basemodel = nn.Sequential(*list(model.children())[:-2])
+        self.ghostnet = basemodel
+        self.gru = nn.GRU(1280, 50, 2, batch_first=True, bidirectional=True)#bidirectional=True:双向GRU 所以输出的维度是50*2！
         self.fc = nn.Linear(100, 50)
-        self.pool = nn.AdaptiveAvgPool1d(1)
+        # self.pool = nn.AdaptiveAvgPool2d(1)
 
     def forward(self, x):
         x = self.ghostnet(x)
-        x = x.permute(0, 2, 3, 1)
-        x = x.reshape(x.size(0), x.size(1), -1)
-        x, _ = self.gru(x)
-        x = x.squeeze(1)
-        print(x.size())
-        x = self.fc(x)
-        x = self.pool(x)
+        x = x.permute(0, 2, 3, 1)#x.shape:[32,1280,1,1]-->[32,1,1,1280]
+        x = x.view(x.size(0), x.size(1), -1)#x.shape:[32,1,1280]
+        x, _ = self.gru(x)#x.shape:[32,1,100]
+        x = x.squeeze(1)#x.shape:[32,100]
+        x = self.fc(x)#x.shape:[32,50]
+        # x = self.pool(x)
         return x
 
 
@@ -299,7 +317,7 @@ class pretrained_ghostnet_gru(nn.Module):
 if __name__=='__main__':
     # model = ghostnet()
     # model.eval()
-    # print(model)
+    # # print(model)
     # input = torch.randn(32,3,128,1723)
     # y = model(input)
     # print(y.size())
@@ -311,6 +329,7 @@ if __name__=='__main__':
     #预训练的ghhosnet测试
     model = pretrained_ghostnet_gru()
     model.eval()
+    # print(model)
     input = torch.randn(32,3,128,1723)
     y = model(input)
     print(y.size())#torch.Size([32, 50])

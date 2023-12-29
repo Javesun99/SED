@@ -369,9 +369,9 @@ class res18(nn.Module):
 
 
     def forward(self, x):
-        x = self.features(x)
-        x = self.pool(x)
-        x = self.fc(x).squeeze(2).squeeze(2)
+        x = self.features(x)#x.shape = [32,512,4,54]
+        x = self.pool(x)#x.shape = [32,512,1,1]
+        x = self.fc(x).squeeze(2).squeeze(2)#x.shape = [32,50]
         return x
 
 
@@ -381,11 +381,13 @@ def count_parameters(model):
 if __name__=='__main__':
     # model = ghostnet()
     # print(model)
-    # input = torch.randn(32,3,128,1723)
+    input = torch.randn(32,3,128,1723)
     # y = model(input)
     # print(y.size())
     from torchsummary import summary
     # model = PHMSeldnet_augmented(4800,pool_time=True, class_overlaps=3,input_channels=8,verbose=True, n=8)
     # summary(model, (8, 256, 4800))
     model = res18()
-    summary(model, (3, 128, 1723))
+    y = model(input)
+    print(y.size())
+    # summary(model, (3, 128, 1723))

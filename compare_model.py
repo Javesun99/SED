@@ -17,8 +17,8 @@ class resnet(nn.Module):
             num_ch = 512
         else:
             num_ch = 2048
-        self.fc = nn.Conv2d(num_ch, 50, 1)
-        self.pool = nn.AdaptiveAvgPool2d(1)
+        self.pool = nn.AdaptiveAvgPool2d(1)#(1,1)
+        self.fc = nn.Conv2d(num_ch, 50, 1)#与全连接层类似，是1*1的卷积核，相当于全连接层
 
 
     def forward(self, x):
@@ -60,12 +60,12 @@ class resnet(nn.Module):
 
 if __name__=='__main__':
     # resnet 模型测试 passed
-    # model = resnet("resnet18")
-    # model.eval()
-    # print(model)
-    # input = torch.randn(32,3,128,1723)
-    # y = model(input)
-    # print(y.size())
+    model = resnet("resnet18")
+    model.eval()
+    print(model)
+    input = torch.randn(32,3,128,1723)
+    y = model(input)
+    print(y.size())
     # from torchsummary import summary
     # summary(model, (3, 128, 1723))
     pass
