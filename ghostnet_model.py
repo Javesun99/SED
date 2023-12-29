@@ -289,6 +289,7 @@ class pretrained_ghostnet_gru(nn.Module):
         x = x.reshape(x.size(0), x.size(1), -1)
         x, _ = self.gru(x)
         x = x.squeeze(1)
+        print(x.size())
         x = self.fc(x)
         x = self.pool(x)
         return x
