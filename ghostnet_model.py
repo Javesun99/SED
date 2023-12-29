@@ -208,9 +208,9 @@ class GhostNet(nn.Module):
         x = self.act1(x)
         x = self.blocks(x)
         x = self.global_pool(x)
-        x = self.conv_head(x)
+        x = self.conv_head(x)#x.shape:[32,1280,1,1]
         x = self.act2(x)
-        x = x.view(x.size(0), -1)
+        x = x.view(x.size(0), -1)#x.shape:[32,1280]
         if self.dropout > 0.:#dropout=0.2,下面预训练模型中没有dropout层
             x = F.dropout(x, p=self.dropout, training=self.training)
         x = self.classifier(x)
@@ -317,11 +317,11 @@ class pretrained_ghostnet_gru(nn.Module):
 
 
 if __name__=='__main__':
-    # model = ghostnet()
-    # model.eval()
-    # # print(model)
-    # input = torch.randn(32,3,128,1723)
-    # y = model(input)
+    model = ghostnet()
+    model.eval()
+    # print(model)
+    input = torch.randn(32,3,128,1723)
+    y = model(input)
     # print(y.size())
     # from torchsummary import summary
     # model = ghostnet()
@@ -329,9 +329,9 @@ if __name__=='__main__':
 
 
     #预训练的ghhosnet测试
-    model = pretrained_ghostnet()
-    model.eval()
-    # print(model)
-    input = torch.randn(32,3,128,1723)
-    y = model(input)
-    print(y.size())#torch.Size([32, 50])
+    # model = pretrained_ghostnet()
+    # model.eval()
+    # # print(model)
+    # input = torch.randn(32,3,128,1723)
+    # y = model(input)
+    # print(y.size())#torch.Size([32, 50])
