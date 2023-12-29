@@ -376,5 +376,7 @@ if __name__ == "__main__":
     for epoch in range(start, epochs):
         train(epoch)
         eval(epoch)
+        current_lr = optimizer.param_groups[0]['lr']
+        print('current_lr : {:.8f}'.format(current_lr))
         if epoch %10==0:
             torch.save(model.state_dict(), './models/{}_lr{}_{}epochs_saved_weights.pth'.format(watermark,lr,epoch))
