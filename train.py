@@ -41,6 +41,7 @@ parser.add_argument('--batch_size', default=8, type=int,metavar='N',help='mini-b
 parser.add_argument('-p','--pretrained', dest='pretrained', action='store_true',help='use pre-trained model')
 parser.add_argument('--arch', '-a', metavar='ARCH', default='ghostnet',help='model architecture: (default: resnet18)')
 parser.add_argument('--test_size','-t', default=0.2, type=float,metavar='N',help='test_size')
+parser.add_argument('--auto_lr', default=False, type=bool,metavar='N',help='auto_lr')
 
 logs = []
 logs_eval = []
@@ -281,7 +282,8 @@ def eval(epoch):
         t.set_description(f'(loss={running_loss/(idx+1):.4f})(acc 1={acc/(idx+1):.4f})')
 
     #设置动态学习率
-    exp_lr_scheduler.step(running_loss/len(test_loader))
+    if args.auto_lr:
+        exp_lr_scheduler.step(running_loss/len(test_loader))
     losses.append(running_loss/len(test_loader))
     accs.append(running_acc/(len(test_loader)))
     print('eval acc : {:.2f}%'.format(running_acc/(len(test_loader))*100))
@@ -324,6 +326,8 @@ if __name__ == "__main__":
 
     batch_size = args.batch_size
 
+    epochs = args.epochs
+
     CONTINUE = False
 
     # define directories
@@ -350,22 +354,13 @@ if __name__ == "__main__":
     train_loader = torch.utils.data.DataLoader(traindataset, batch_size=batch_size,shuffle=True, num_workers=0)
     test_loader = torch.utils.data.DataLoader(testdataset, batch_size=batch_size,shuffle=True, num_workers=0)
 
-
-
-
-    # model = mymodel()
-    # model = res18()
-    # model = ghostnet()
-    #使用预训练的ghostnet
-    # model = pretrained_ghostnet()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
     optimizer = optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     criterion = nn.CrossEntropyLoss()
-    # epochs = 100 # original 50
-    epochs = args.epochs
 
-    exp_lr_scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=5, verbose=True, min_lr=1e-3*1e-4, factor=0.33)
+
+    exp_lr_scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=5, verbose=True, min_lr=1e-3*1e-4, factor=0.33)#根据实验结果来看patience=5有点过大，可以设置为2试试看
 
 
 
@@ -376,7 +371,8 @@ if __name__ == "__main__":
     for epoch in range(start, epochs):
         train(epoch)
         eval(epoch)
-        current_lr = optimizer.param_groups[0]['lr']
-        print('current_lr : {:.8f}'.format(current_lr))
+        if args.auto_lr:
+            current_lr = optimizer.param_groups[0]['lr']
+            print('current_lr : {:.8f}'.format(current_lr))
         if epoch %10==0:
             torch.save(model.state_dict(), './models/{}_lr{}_{}epochs_saved_weights.pth'.format(watermark,lr,epoch))
